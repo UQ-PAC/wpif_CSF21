@@ -82,6 +82,10 @@ fun negate :: "('Var, 'Aexp, 'Bexp) Action \<Rightarrow> ('Var, 'Aexp, 'Bexp) Ac
   "negate (NCAS x e\<^sub>1 e\<^sub>2) = (CAS x e\<^sub>1 e\<^sub>2)" |
   "negate _ = Stop"
 
+lemma update_det:
+  "(m,m') \<in> update \<alpha> \<longrightarrow> (m,m'') \<in> update \<alpha> \<longrightarrow> m' = m''"
+  by (cases \<alpha>) auto
+
 end
 
 end

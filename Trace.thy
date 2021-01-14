@@ -309,4 +309,19 @@ next
     by (induct "{t. c \<mapsto>t\<^sup>* Skip}" x rule: rep\<^sub>i.induct) auto
 qed
 
+lemma trace_det:
+  assumes "c \<mapsto>t\<^sup>* c'" "c \<mapsto>t\<^sup>* c''"
+  shows "c'' = c'"
+  using assms
+proof (induct arbitrary: c'')
+  case (lift c)
+  then show ?case sorry
+next
+  case (rewrite c\<^sub>1 c\<^sub>2 t c\<^sub>3)
+  then show ?case sorry
+next
+  case (prepend c\<^sub>1 \<alpha> c\<^sub>2 t c\<^sub>3)
+  then show ?case sorry
+qed
+
 end

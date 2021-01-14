@@ -193,8 +193,7 @@ lemma frameI [intro]:
   using assms
 proof (induct arbitrary: M)
   case (skip P R G)
-  then show ?case 
-    by (smt IntI Int_lower1 Int_lower2 bisimulation.skip stable_def subset_eq) 
+  then show ?case by blast
 next
   case (act P R Q \<alpha> G)
   show ?case
@@ -440,6 +439,17 @@ proof
   qed
   thus ?thesis using that by auto
 qed
+
+lemma secure:
+  assumes "\<langle>c,m\<^sub>1\<rangle> \<rightarrow>t\<^sup>* \<langle>c\<^sub>1,m\<^sub>1'\<rangle>"
+  assumes "R,G \<turnstile>\<^sub>s P { c } Q"
+  assumes "(m\<^sub>1,m\<^sub>2) \<in> P"
+  assumes "(m\<^sub>1,m\<^sub>2) \<in> \<L>"
+  assumes "stable \<L> G"
+  assumes "\<langle>c,m\<^sub>2\<rangle> \<rightarrow>t\<^sup>* \<langle>c\<^sub>2,m\<^sub>2'\<rangle>"
+  shows "(m\<^sub>1',m\<^sub>2') \<in> \<L>"
+  using bisim[OF assms(1,2,3,4,5)] assms(6)
+  using ev_det by metis
 
 end
 

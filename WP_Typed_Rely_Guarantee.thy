@@ -72,7 +72,7 @@ qed  (auto simp: type_ord_def mem_delta_def intro!: eval\<^sub>A_det)
 end
 
 sublocale type_rg_if_impl \<subseteq> typed_rely_guarantee update flow
-  using flow_sound_impl by unfold_locales auto
+  using flow_sound_impl update_det by unfold_locales auto
 
 section \<open>Locale\<close>
 
