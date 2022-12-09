@@ -48,22 +48,20 @@ sync read : dataType
   if ($\casInstn$(z, 0, 2)) {
     y := x;
     z := 0;
-  return y;
-  }
-
-write(dataType data) :
-  x := data;
-
-read : dataType
-  return x;
-\end{lstlisting}
+  return y;}\end{lstlisting}
 \end{minipage}
 \end{center}
+
+% write(dataType data) :
+%   x := data;
+
+% read : dataType
+%   return x;
 
 
 
 \begin{itemize}
-\item We require that the secret is not \verb|x= secret| is not leaked
+\item We require that the secret is not \verb|x = secret| is not leaked
   from the write to the read (provided 
 \item The security policy fails under persistent memory, even if the
   underlying model is SC 
