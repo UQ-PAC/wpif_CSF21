@@ -1,0 +1,100 @@
+%% internal draft
+\documentclass[format=acmsmall,10pt,dvipsnames,anonymous,nonacm]{acmart}\settopmatter{}
+%% For double-blind review submission, w/o CCS and ACM Reference (max submission space)
+%\documentclass[format=acmsmall,10pt,natbib=false,dvipsnames,anonymous,screen,review]{acmart}\settopmatter{}
+%\documentclass[acmsmall,review,anonymous,screen]{acmart}
+%\settopmatter{printfolios=true,printccs=false,printacmref=false}
+%% For double-blind review submission, w/ CCS and ACM Reference
+%\documentclass[sigplan,review,anonymous]{acmart}\settopmatter{printfolios=true}
+%% For single-blind review submission, w/o CCS and ACM Reference (max submission space)
+%\documentclass[sigplan,review]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
+%% For single-blind review submission, w/ CCS and ACM Reference
+%\documentclass[sigplan,review]{acmart}\settopmatter{printfolios=true}
+%% For final camera-ready submission, w/ required CCS and ACM Reference
+%\documentclass[sigplan]{acmart}\settopmatter{}
+
+%% Bibliography style
+\bibliographystyle{ACM-Reference-Format}
+%% Citation style
+%% Note: author/year citations are required for papers published as an
+%% issue of PACMPL.
+\citestyle{acmauthoryear}   %% For author/year citations
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsthm}
+\usepackage{xcolor} 
+\usepackage[inference]{semantic}
+\usepackage{stmaryrd}
+\usepackage{mathpartir}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{stmaryrd}
+\usepackage{thm-restate}
+\usepackage{multicol}
+\usepackage{color}
+\usepackage{algorithm}
+\usepackage{float}
+\usepackage{multirow}
+%\usepackage[noend]{algpseudocode}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{mathpartir}
+\usepackage{xspace}
+\usepackage{paralist}
+\usepackage[inline]{enumitem}
+\usepackage{hyperref}
+\renewcommand{\ttdefault}{cmtt}
+\usepackage[capitalise,nameinlink]{cleveref}
+\usetikzlibrary{calc}
+\usetikzlibrary{arrows,automata}
+\usetikzlibrary{positioning}
+\usepackage{ifthen}
+\usepackage{xargs}
+\usepackage{wrapfig}
+\usepackage{listings}
+%\usepackage{csvsimple}
+\usepackage{pifont}
+\usepackage{xcolor}
+%\usepackage{balance}
+\usepackage{etoolbox}
+\usepackage[inline]{enumitem}
+\usepackage{adjustbox}
+\usepackage{changepage}
+\usepackage{graphicx,calc}
+%\usepackage[margin=2cm,a4paper]{geometry}
+
+
+\input{defs} 
+
+\newif\iflong
+\longtrue % uncomment to compile long version
+%\longfalse % uncomment to compile short version
+
+\newif\ifdraft
+\drafttrue % uncomment to compile with comments
+%\draftfalse % uncomment to compile without comments
+
+%\ifdraft
+%\usepackage{showframe}
+%\raggedbottom
+%\fi
+
+% \sloppy
+
+\title{Backwards-directed information flow analysis for persistent
+  memory programs}
+
+\author{Nicholas, Brijesh, Graeme, Kirsten}
+
+\date{July 2022}
+
+\begin{document}
+
+\maketitle
+
+\input{notes}
+
+% \bibliographystyle{alpha}
+\bibliography{references} 
+
+\end{document}
