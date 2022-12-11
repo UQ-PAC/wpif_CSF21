@@ -1,5 +1,5 @@
 theory Nat_Language
-  imports "../WP_Typed_Rely_Guarantee"
+  imports "../Isabelle/WP_Typed_Rely_Guarantee"
 begin
 
 datatype ('Addr) aexp = 
