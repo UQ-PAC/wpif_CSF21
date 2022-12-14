@@ -500,7 +500,15 @@
 \newcommand{\xchgInst}[3]{#1 \;{:=}\;\xchgInstn({#2},{#3})}
 %\newcommand{\casInst}[4]{#1 \;{:=}\;\casInstn({#2},{#3} \shortrightarrow {#4})}
 \newcommand{\casInst}[4]{#1 \;{:=}\;\casInstn({#2},{#3},{#4})}
+\newcommand{\casInstb}[3]{\casInstn({#1},{#2},{#3})}
+\newcommand{\flInst}[1]{\flInstn\; #1}
+\newcommand{\floInst}[1]{\floInstn\;#1}
+
+
 \newcommand{\casInstn}{\kw{CAS}}
+\newcommand{\flInstn}{\kw{flush}}
+\newcommand{\floInstn}{\kw{flushopt}}
+\newcommand{\sfenceInstn}{\kw{sfence}}
 \newcommand{\faddInstn}{\kw{FADD}}
 \newcommand{\xchgInstn}{\kw{XCHG}}
 \newcommand{\waitInstn}{\kw{wait}}
