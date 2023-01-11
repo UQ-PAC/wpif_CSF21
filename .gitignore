@@ -1,5 +1,7 @@
 *.thy~
+*.thy#
 ROOT~
 document/
 paper/
 ROOT
+.DS_Store
