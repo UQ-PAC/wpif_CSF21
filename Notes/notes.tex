@@ -1,0 +1,201 @@
+\section{Motivation}
+
+
+
+\begin{figure}
+\centering
+\quad \begin{minipage}[b]{0.4\linewidth}
+\begin{lstlisting}
+initially z = 0 $\wedge$ x = 0
+sync write(int secret) : bool
+   bool a := $\casInstn$(z, 0, 1); 
+   if (a) {
+     x := secret;
+     ...
+     x := 0;
+     // flush x;
+     z := 0;}
+   return a; 
+
+sync read : <int, bool>
+  int b;
+  if $\casInstn$(z, 0, 2){
+    b := x;
+    z := 0;
+    return <b, 1>;}
+  return <b, 0>;  \end{lstlisting}
+\caption{Persistent information flow}
+\label{fig:pif}
+\end{minipage}
+\qquad \quad 
+\begin{minipage}[b]{0.48\linewidth}
+\begin{lstlisting}
+initially z = 0 $\wedge$ x = 0
+sync write2(int secret) :
+   bool a := $\casInstn$(z, 0, 1); 
+   if (a) {
+     x := secret;
+     y := another_secret;
+     ...
+     x := 0;
+     // flushopt x;
+     y := 0;
+     // flushopt y;
+     // sfence;
+     z := 0;}
+   return a; 
+
+sync read2 : <int, bool>
+  int b;
+  if $\casInstn$(z, 0, 2) {
+    b := x + y;
+    z := 0;
+    return <r, 1>;}
+  return <r, 0>; \end{lstlisting}
+\caption{Persistent information flow with {\tt flushopt}}
+\label{fig:pif-op}
+\end{minipage}
+\end{figure}
+
+
+% write(dataType data) :
+%   x := data;
+
+% read : dataType
+%   return x;
+
+
+
+\begin{itemize}
+\item As in \cref{fig:pif}, we require that \verb|x = secret| is not
+  leaked from the write to the read. However, this security policy
+  fails under persistent memory, even if the underlying model is PSC
+  (Khyzha and Lahav), which is the SC memory model extended with
+  persistency operations $\flInst{x}$, $\floInst{x}$ and
+  $\sfenceInstn$. 
+\item Instruction $\flInst{x}$ ensures the volatile value
+  of $x$ is persisted before proceeding. $\floInst{x}$ is an optimised
+  flush of $x$ that works in conjunction with $\sfenceInstn$. In
+  particular, we can only be guaranteed that the last write to $x$
+  before $\floInst{x}$ is executed is persistent after a subsequent
+  $\sfenceInstn$ is executed.
+\item Returning to \cref{fig:pif}, if the system crashes after
+  \verb|z := 0| has executed, upon recovery, we could have
+  \verb|z = 0| and \verb|x = secret| causing the security policy to be
+  broken.  This means that we need to insert a flush instruction
+  between the \verb|x := 0| and \verb|z := 0| to ensure a {\em
+    persistent invariant} $z = 0 \implies x = 0$
+\item \cref{fig:pifopt} is similar, but the solution to establishing the persistent invariant is different. In \cref{fig:pifopt}
+\end{itemize}
+
+
+\paragraph{Idea 1} Extend the security policy CSF paper directly with WPs for weak memory
+Defining $wp'$ in the right way would be the hardest challenge
+\begin{itemize}
+\item Option 1: Model persistence buffers etc, directly (ugly)
+\item Option 2: Assertions that capture the Khyzha/Lahav semantics (wp may not play so nice) 
+\end{itemize}
+
+\paragraph{Idea 2} use existing semantics to encode persistent invariants with security policies
+- would only be worthwhile if we were to consider Px86-TSO
+
+\section{WP-based treatment of PSC} 
+
+We have previously explored the possibility of extending wp to support weak memory concepts, specifically targeting an extension to the CSF paper. However, the approach became too intricate when considering the ARMv8 memory model, as a significant amount of bookkeeping was required to check all possible execution orders. Persistent memory (and perhaps TSO) might be simple enough to capture though.
+
+I suspect we can come up with suitable over-approximations of the PSC state, sufficient to phrase the properties of interest without modelling the full buffers. For instance, the predicate language could be extended to refer to variables in the persistent memory, e.g. $x_p$ for variable $x$. These predicates would then be interpreted such that a state satisfies it if only if it does so directly and all states reachable via persist steps (PERSIST-W, PERSIST-FO) satisfy it as well. There would be a similar annotation that could be introduced for flush-opt instructions, e.g. $x_{fo}$, with some interpretation based on the relative placement of an $FO$ and a write in the buffer.
+
+The wp rules would then look something like:
+
+\begin{itemize}
+\item $wp(flush~x)~Q := Q[x/x_p]$
+\item $wp(read~x~v)~Q := x = v \implies Q$ 
+\item $wp(write~x~v)~Q := Q[v/x] \land Q[v/x][v/x_p]$ (maybe?)
+\end{itemize}
+Its also necessary to determine what rely/guarantee specification looks like in this setting. Their interactions with the persistent memory have to be constrained to get soundness plus some axioms to make all of the annotations make sense. For instance, the environment behaviour shouldn't be conditional on the persistent state.
+
+Overall, seems like it should be relatively easy to encode in the wp infrastructure and could be embedded into the CSF Isabelle theories. However, future extensions to support weak memory are not clear. I have a few ideas for wp for TSO, but anything weaker rapidly becomes a problem.
+
+\section{RIF Based}
+
+The complexity of the wp approach for weak memory motivated the
+separate weak memory interference check
+\url{https://staff.itee.uq.edu.au/kirsten/publications/fm2021.pdf}.
+
+\nc{This
+approach requires a static analysis to identify reorderable pairs of
+instructions and then requires a proof of interference freedom for
+each. I'm not sure how to combine this with persistent memory at the
+moment, but I'd hope it would be possible to preserve the wp approach
+above with some arbitrary weak memory model using this technique.}
+
+\subsection{Examples}
+ 
+  (taken from initial submission of CSF'21 paper which included WMM considerations)
+
+\paragraph{where reordering of instructions invalidates the PO}
+-  Consider the following wp reasoning using $wpi\!f$ where $\{x,y,z\}\subseteq Global$ and
+$\cL(x)=\cL=true$ and $\cL(y)= (z=0)$.
+
+
+\begin{lstlisting}
+{true}
+  z := 0;
+{z=0}      <-----  PO($\beta$)
+  x := y;  <-----  $\beta$ 
+{true}
+  z := 1;  <----- $\alpha\in later(\beta)$
+{true}
+\end{lstlisting}
+
+
+While this evaluates as being secure, since $x:=y$ and $z:=1$ do not
+share any variables, they can be reordered under a weak memory
+model. The reasoning using $wpi\!f$ in this case would indicate a
+possible information leak. \bd{Not sure we should consider a
+  reordering based semantics. But this example may be useful for Px86-TSO }
+
+\begin{lstlisting}
+{false}
+  z := 0;
+{false}
+  z := 1;  <------- $\alpha\in later(\beta)$  (reordered)
+{z=0}      <------- PO($\beta$)
+  x := y;  <------- $\beta$
+{true}
+\end{lstlisting}
+The leak occurs when a concurrent thread, seeing $z$ set to 1, writes a high value to $y$ before $y$'s value is read into the low variable $x$.
+
+
+\paragraph{ where reordering of instructions affects the stability of PO}
+
+The checks of stability under $\cR$ on the proof obligation under substitution ($stable_R(wp_Q(c,Q))$) can depend on the order in which substitution is applied. That is, $stable_R(wp_Q(\alpha,Q))\neq stable_R(wp_Q(\beta,Q))$ even if $wp_Q(\alpha;\beta, Q)=wp_Q(\beta;\alpha, Q)$.
+
+Consider the following weakest precondition reasoning using $wp_Q$ over a program from a point where the outstanding proof obligation is $x \leq c$.
+  
+\begin{lstlisting}
+ {n $\leq$ 0}   <----- $PO(\beta)[x\leftarrow n][c \leftarrow 0]$
+  c:=0; 
+  {n $\leq$ c}  <----- $wp_Q(x:=n, PO(\beta)) = PO(\beta)[x\leftarrow n]$
+  x:=n;
+  {x $\leq$ c}  <----- $PO(\beta)$
+$\beta$ 
+\end{lstlisting}
+If the rely condition $\cR$ is $x \leq c \land x'\leq c' \land c'=c \land n'=n$ then obviously all the predicates in the reasoning are stable under $\cR$. However, since $x:=n$ and $c:=0$ do not share any variables, they can be reordered under a weak memory model. The code fragment with its reasoning may take the following form,
+
+\begin{lstlisting}
+ {n $\leq$ 0}    <------ $PO(\beta)[c\leftarrow 0][n\leftarrow 0]$
+  x:=n; 
+  {x $\leq$ 0}   <------ $wp_Q(c:=0, PO(\beta)) = PO(\beta)[c\leftarrow 0]$
+  c:= 0;
+  {x $\leq$ c}   <------ $PO(\beta)$
+  $\beta$
+\end{lstlisting}
+where the middle predicate $x \leq 0$ is not stable under $\cR$. For example, if $c$ were 10 then the environment could set $x$ to any value up to and including 10, violating $x \leq 0$.  Hence, although the original program is secure under $wpi\!f_{RG}$ the latter reordered program is not.
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:
